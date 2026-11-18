@@ -1,0 +1,233 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+// Intro, portrait, about, and contact: src/content/pages/portfolio.yml, edited in the CMS.
+const page = (await getEntry('pages', 'portfolio')).data;
+const about = page.about.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+---
+<Base title={`Portfolio · ${page.name}`} description={page.intro}>
+  <div class="wrap">
+    <nav>
+      <a href="/" class="wordmark">{page.name}</a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="#work">Work</a>
+        <a href="#about">About</a>
+        <a href="#contact">Say hi</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="tag">{page.greeting}</div>
+        <h1>{page.name}</h1>
+        <p>{page.intro}</p>
+        <a href="#work" class="button">See my work</a>
+      </div>
+      {page.portrait ? (
+        <img class="portrait" src={page.portrait} alt={page.portrait_alt ?? ''} />
+      ) : (
+        <div class="portrait placeholder">[Portrait photo]</div>
+      )}
+    </section>
+
+    <section id="work" class="work">
+      <h2>A few things I've made</h2>
+      <div class="work-grid">
+        {work.map((item) => (
+          <div class="work-card">
+            {item.data.image ? (
+              <img class="work-image" src={item.data.image} alt={item.data.title} />
+            ) : (
+              <div class="work-image placeholder">[Project image]</div>
+            )}
+            <div class="work-title">{item.data.title}</div>
+            <div class="work-summary">{item.data.summary}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="tag">a little about me</div>
+      {about.map((para) => <p>{para}</p>)}
+    </section>
+
+    <section id="contact" class="contact">
+      <h2>Let's talk</h2>
+      <p>{page.email}</p>
+      <a href={`mailto:${page.email}`} class="button">Say hello</a>
+    </section>
+
+    <footer>© {new Date().getFullYear()} {page.name}</footer>
+  </div>
+</Base>
+
+<style>
+  .wrap {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .wordmark {
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: 21px;
+    font-weight: 500;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    font-size: 15px;
+  }
+
+  .hero {
+    padding: 48px 24px 80px;
+    display: flex;
+    gap: 56px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .hero-copy {
+    flex: 1 1 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-width: 540px;
+  }
+
+  .hero-copy h1 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(38px, 6vw, 58px);
+    line-height: 1.12;
+    margin: 0;
+  }
+
+  .hero-copy p {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--text-soft);
+    margin: 0;
+  }
+
+  .portrait {
+    flex: 1 1 260px;
+    max-width: 360px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 6px solid var(--bg-card);
+    margin: 0 auto;
+  }
+
+  img.portrait {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .work {
+    padding: 0 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .work h2,
+  .about h2,
+  .contact h2 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 30px;
+    margin: 0;
+  }
+
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 32px;
+  }
+
+  .work-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 1px 0 #efd9c4;
+  }
+
+  .work-image {
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  img.work-image {
+    display: block;
+  }
+
+  .work-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .work-summary {
+    font-size: 14px;
+    color: var(--text-faint);
+  }
+
+  .about {
+    padding: 48px 32px;
+    background: var(--bg-card);
+    border-radius: 28px;
+    margin: 0 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 680px;
+  }
+
+  .about p {
+    font-size: 17px;
+    line-height: 1.85;
+    color: var(--text-soft);
+    margin: 0;
+  }
+
+  .contact {
+    padding: 32px 24px 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: flex-start;
+  }
+
+  .contact p {
+    font-size: 16px;
+    color: var(--text-soft);
+    margin: 0;
+  }
+
+  footer {
+    padding: 24px;
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+</style>

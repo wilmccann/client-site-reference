@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Page not found · Jordan Avery">
+  <main class="not-found">
+    <div class="tag">oops</div>
+    <h1>That page wandered off.</h1>
+    <p>The link may be old, or the address mistyped.</p>
+    <div class="links">
+      <a href="/" class="button">Go home</a>
+      <a href="/portfolio/">See the portfolio</a>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .not-found {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  h1 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(32px, 6vw, 48px);
+    margin: 0;
+  }
+
+  p {
+    color: var(--text-soft);
+    margin: 0;
+  }
+
+  .links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+</style>

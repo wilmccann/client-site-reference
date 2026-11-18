@@ -1,0 +1,19 @@
+/* Shared look for every page. The home page may change these; the portfolio follows. */
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Nunito+Sans:wght@400;600&display=swap");
+
+:root {
+  --bg: #e3eae1;
+  --bg-card: #edf3eb;
+  --text: #3d2e26;
+  --text-soft: #5c473d;
+  --text-faint: #a1876f;
+  --accent: #c1694f;
+  --accent-hover: #a14f3c;
+  --accent-ink: #f4f7f3;
+  --placeholder-bg: #d0dbce;
+  --placeholder-text: #c9a480;
+
+  --font-body: "Nunito Sans", system-ui, sans-serif;
+  --font-heading: "Source Serif 4", Georgia, serif;
+  --font-hand: "Caveat", cursive;
+}

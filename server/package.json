@@ -1,0 +1,10 @@
+{
+  "name": "reference-site-server",
+  "description": "Serves the site and its CMS sign-in on Cloud Run. Node built-ins only: no dependencies.",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

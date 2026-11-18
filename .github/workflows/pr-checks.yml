@@ -1,0 +1,33 @@
+name: PR checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Home page checks
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          SKIP_PATHS: ${{ contains(github.event.pull_request.labels.*.name, 'allow-any-path') && '--skip-paths' || '' }}
+        run: bash scripts/check-home-pr.sh "$BASE_SHA" "$HEAD_SHA" $SKIP_PATHS

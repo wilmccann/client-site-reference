@@ -1,0 +1,4 @@
+# What `gcloud run deploy --source server` uploads. Having this file stops gcloud from
+# using .gitignore, which leaves out public/: the built site, copied in at deploy time.
+.gcloudignore
+node_modules/

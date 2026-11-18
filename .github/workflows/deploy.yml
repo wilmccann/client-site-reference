@@ -1,0 +1,72 @@
+name: Deploy
+
+# Publishes the site to the Cloud Run service my-site. The service serves the pages and the CMS
+# sign-in (server/server.js). Google keeps Node.js and the OS patched through automatic base
+# image updates. See README.md, "Architecture" and "Deploying your own copy".
+#
+# Replace the YOUR_* placeholders below before the first push to main; until then this
+# workflow fails at the Google Cloud sign-in step and deploys nothing.
+
+on:
+  push:
+    branches: [main]
+    # Docs-only changes don't affect the site, so they don't deploy.
+    # (Not "**.md": the portfolio's work items in src/content/work/ are Markdown.)
+    paths-ignore:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PROJECT: YOUR_GCP_PROJECT_ID
+  REGION: us-central1
+  SERVICE: my-site
+  # Workload Identity Federation (no keys). The provider only accepts main of YOUR_GITHUB_OWNER/YOUR_REPO.
+  WIF_PROVIDER: projects/YOUR_GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+  DEPLOYER: my-site-deployer@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com
+  # Public values. The client secret is in Secret Manager (github-oauth-client-secret).
+  GITHUB_CLIENT_ID: YOUR_GITHUB_OAUTH_CLIENT_ID
+  ALLOWED_ORIGINS: https://example.com,https://my-site-YOUR_GCP_PROJECT_NUMBER.us-central1.run.app
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Put the built site next to the server
+        run: cp -R dist server/public
+
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.PROJECT }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOYER }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      # Public access (the invoker check is off) was set once by hand and is kept by every
+      # deploy; the deployer isn't allowed to change it.
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" --source server \
+            --project "$PROJECT" --region "$REGION" \
+            --base-image nodejs24 --automatic-updates \
+            --service-account "my-site-runtime@$PROJECT.iam.gserviceaccount.com" \
+            --build-service-account "projects/$PROJECT/serviceAccounts/my-site-build@$PROJECT.iam.gserviceaccount.com" \
+            --min-instances 0 --max-instances 2 \
+            --set-env-vars "^;^GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID;ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
+            --set-secrets "GITHUB_CLIENT_SECRET=github-oauth-client-secret:latest" \
+            --quiet
