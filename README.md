@@ -304,8 +304,9 @@ Replace these everywhere (`grep -rn YOUR_ --exclude-dir=node_modules .` finds mo
 Files that hold them: `.github/workflows/deploy.yml`, `public/admin/config.yml`,
 `scripts/gcloud-init.sh`, `.gcloud-config`, `astro.config.mjs` (`site`), and the `ALLOWED_ORIGINS`
 default in `server/server.js`. Replace the sample content in `src/content/` and the name in
-`src/pages/index.astro` and `src/pages/404.astro`. Until the deploy values are filled in, the
-Deploy workflow fails at the Google Cloud sign-in and deploys nothing.
+`src/pages/index.astro` and `src/pages/404.astro`. Until every placeholder in `deploy.yml` is
+filled in, the Deploy workflow builds the site and skips the Google Cloud steps, so it deploys
+nothing.
 
 ### Local development
 

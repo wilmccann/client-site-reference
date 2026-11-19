@@ -4,8 +4,8 @@ name: Deploy
 # sign-in (server/server.js). Google keeps Node.js and the OS patched through automatic base
 # image updates. See README.md, "Architecture" and "Deploying your own copy".
 #
-# Replace the YOUR_* placeholders below before the first push to main; until then this
-# workflow fails at the Google Cloud sign-in step and deploys nothing.
+# Replace the YOUR_* placeholders below to enable deploys. Until then this workflow builds
+# the site and skips the Google Cloud steps, so it deploys nothing.
 
 on:
   push:
@@ -38,6 +38,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Skips the Google Cloud steps (but still builds) while any YOUR_* placeholder remains.
+      - name: Check deploy settings
+        id: config
+        run: |
+          if grep -q 'YOUR_' <<< "$PROJECT $WIF_PROVIDER $DEPLOYER $GITHUB_CLIENT_ID $ALLOWED_ORIGINS"; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deploy skipped: replace the YOUR_* placeholders in deploy.yml to enable it."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-node@v7
         with:
           node-version: 22
@@ -50,16 +61,19 @@ jobs:
         run: cp -R dist server/public
 
       - uses: google-github-actions/auth@v3
+        if: steps.config.outputs.ready == 'true'
         with:
           project_id: ${{ env.PROJECT }}
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.DEPLOYER }}
 
       - uses: google-github-actions/setup-gcloud@v3
+        if: steps.config.outputs.ready == 'true'
 
       # Public access (the invoker check is off) was set once by hand and is kept by every
       # deploy; the deployer isn't allowed to change it.
       - name: Deploy to Cloud Run
+        if: steps.config.outputs.ready == 'true'
         run: |
           gcloud run deploy "$SERVICE" --source server \
             --project "$PROJECT" --region "$REGION" \
